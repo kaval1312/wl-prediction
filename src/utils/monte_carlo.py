@@ -1,8 +1,10 @@
+# src/utils/monte_carlo.py
+
 import numpy as np
-from dataclasses import dataclass
-from typing import Dict, List, Optional
 import pandas as pd
-from .lease_terms import LeaseTerms, AbandonmentCosts
+from typing import Dict, List, Optional, Tuple
+from dataclasses import dataclass
+from .economic_parameters import EconomicParameters
 
 
 @dataclass
@@ -27,53 +29,73 @@ class MonteCarloSimulator:
 
     def run_full_analysis(
             self,
-            initial_rate: float,
-            decline_rate: float,
-            oil_price: float,
-            opex: float,
-            initial_investment: float,
-            lease_terms: LeaseTerms,
-            abandonment_costs: AbandonmentCosts,
+            economic_params: EconomicParameters,
             months: int = 120,
             iterations: int = 1000,
             confidence_level: float = 0.90
     ) -> MonteCarloResults:
-        """Run comprehensive Monte Carlo analysis"""
-        # Initialize arrays
+        """
+        Run comprehensive Monte Carlo analysis.
+
+        Args:
+            economic_params: Economic parameters for analysis
+            months: Number of months to simulate
+            iterations: Number of Monte Carlo iterations
+            confidence_level: Confidence level for risk metrics
+
+        Returns:
+            MonteCarloResults object containing all simulation results
+        """
+        # Initialize arrays for results
         production_profiles = np.zeros((iterations, months))
         npv_values = np.zeros(iterations)
         roi_values = np.zeros(iterations)
         payback_values = np.zeros(iterations)
 
+        # Uncertainty parameters
+        production_uncertainty = 0.20  # 20% standard deviation
+        price_uncertainty = 0.15  # 15% standard deviation
+        cost_uncertainty = 0.10  # 10% standard deviation
+
         # Run simulations
         for i in range(iterations):
             # Generate random variations
-            prod_uncertainty = self.rng.normal(1, 0.2)
-            price_uncertainty = self.rng.normal(1, 0.15)
-            cost_uncertainty = self.rng.normal(1, 0.1)
+            prod_factor = self.rng.normal(1, production_uncertainty)
+            price_factor = self.rng.normal(1, price_uncertainty)
+            cost_factor = self.rng.normal(1, cost_uncertainty)
 
             # Calculate production profile
             time = np.arange(months)
-            production = initial_rate * prod_uncertainty * np.exp(-decline_rate * time)
+            production = economic_params.initial_rate * prod_factor * \
+                         np.exp(-economic_params.decline_rate * time)
             production_profiles[i] = production
 
             # Calculate economics
-            revenue = production * oil_price * price_uncertainty
-            costs = production * opex * cost_uncertainty
-            cash_flow = revenue - costs
+            revenue = production * economic_params.oil_price * price_factor
+            costs = production * economic_params.opex * cost_factor
 
-            # Calculate metrics
-            npv = -initial_investment + np.sum(cash_flow / (1 + 0.1) ** (time / 12))
+            # Apply working and net revenue interests
+            net_revenue = revenue * economic_params.net_revenue_interest
+            working_interest_costs = costs * economic_params.working_interest
+
+            # Calculate monthly cash flow
+            cash_flow = net_revenue - working_interest_costs
+
+            # Calculate NPV
+            monthly_discount_rate = (1 + economic_params.discount_rate) ** (1 / 12) - 1
+            discount_factors = 1 / (1 + monthly_discount_rate) ** time
+            npv = -economic_params.initial_investment + np.sum(cash_flow * discount_factors)
             npv_values[i] = npv
 
             # Calculate ROI
-            total_revenue = np.sum(revenue)
-            total_costs = np.sum(costs) + initial_investment
-            roi_values[i] = ((total_revenue - total_costs) / initial_investment) * 100
+            total_revenue = np.sum(net_revenue)
+            total_costs = np.sum(working_interest_costs) + economic_params.initial_investment
+            roi = ((total_revenue - total_costs) / economic_params.initial_investment) * 100
+            roi_values[i] = roi
 
-            # Calculate payback
+            # Calculate payback period
             cumulative_cash_flow = np.cumsum(cash_flow)
-            payback_periods = np.where(cumulative_cash_flow >= initial_investment)[0]
+            payback_periods = np.where(cumulative_cash_flow >= economic_params.initial_investment)[0]
             payback_values[i] = len(time) if len(payback_periods) == 0 else payback_periods[0]
 
         # Calculate percentiles
@@ -95,13 +117,35 @@ class MonteCarloSimulator:
             }
         }
 
+        # Calculate statistics
+        statistics = {
+            'Production': {
+                'mean': np.mean(production_profiles[:, -1]),
+                'std': np.std(production_profiles[:, -1]),
+                'min': np.min(production_profiles[:, -1]),
+                'max': np.max(production_profiles[:, -1])
+            },
+            'NPV': {
+                'mean': np.mean(npv_values),
+                'std': np.std(npv_values),
+                'min': np.min(npv_values),
+                'max': np.max(npv_values)
+            },
+            'ROI': {
+                'mean': np.mean(roi_values),
+                'std': np.std(roi_values),
+                'min': np.min(roi_values),
+                'max': np.max(roi_values)
+            }
+        }
+
         # Calculate risk metrics
+        var_level = 1 - confidence_level
         risk_metrics = {
             'probability_of_loss': np.mean(npv_values < 0),
-            'value_at_risk': np.percentile(npv_values, 5),
-            'expected_shortfall': np.mean(npv_values[npv_values < np.percentile(npv_values, 5)]),
-            'probability_of_target_roi': np.mean(roi_values > 15),  # 15% target ROI
-            'average_payback': np.mean(payback_values)
+            'value_at_risk': np.percentile(npv_values, var_level * 100),
+            'expected_shortfall': np.mean(npv_values[npv_values < np.percentile(npv_values, var_level * 100)]),
+            'probability_of_target_roi': np.mean(roi_values > 15)  # 15% target ROI
         }
 
         # Create detailed results DataFrame
@@ -121,26 +165,51 @@ class MonteCarloSimulator:
             roi_distribution=roi_values,
             payback_distribution=payback_values,
             percentiles=percentiles,
-            statistics={
-                'Production': {
-                    'mean': np.mean(production_profiles[:, -1]),
-                    'std': np.std(production_profiles[:, -1]),
-                    'min': np.min(production_profiles[:, -1]),
-                    'max': np.max(production_profiles[:, -1])
-                },
-                'NPV': {
-                    'mean': np.mean(npv_values),
-                    'std': np.std(npv_values),
-                    'min': np.min(npv_values),
-                    'max': np.max(npv_values)
-                },
-                'ROI': {
-                    'mean': np.mean(roi_values),
-                    'std': np.std(roi_values),
-                    'min': np.min(roi_values),
-                    'max': np.max(roi_values)
-                }
-            },
+            statistics=statistics,
             risk_metrics=risk_metrics,
             detailed_results=detailed_results
         )
+
+    def analyze_sensitivity(
+            self,
+            base_params: EconomicParameters,
+            variables: Dict[str, Tuple[float, float]],
+            months: int = 120,
+            points: int = 10
+    ) -> Dict[str, List[Tuple[float, float]]]:
+        """
+        Perform sensitivity analysis on economic parameters.
+
+        Args:
+            base_params: Base case economic parameters
+            variables: Dictionary of variables and their ranges to test
+            months: Number of months to simulate
+            points: Number of points to test for each variable
+
+        Returns:
+            Dictionary of sensitivity results
+        """
+        results = {}
+        base_results = self.run_full_analysis(base_params, months)
+        base_npv = base_results.statistics['NPV']['mean']
+
+        for var_name, (min_val, max_val) in variables.items():
+            variable_results = []
+            test_values = np.linspace(min_val, max_val, points)
+
+            for test_value in test_values:
+                # Create modified parameters
+                test_params = base_params.copy()
+                setattr(test_params, var_name.lower(), test_value)
+
+                # Run analysis with test parameters
+                test_results = self.run_full_analysis(test_params, months)
+                test_npv = test_results.statistics['NPV']['mean']
+
+                # Calculate change from base case
+                npv_change = (test_npv - base_npv) / base_npv * 100
+                variable_results.append((test_value, npv_change))
+
+            results[var_name] = variable_results
+
+        return results
