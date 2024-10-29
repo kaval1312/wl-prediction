@@ -1,0 +1,83 @@
+
+# settings.yaml
+application:
+  name: "Well Analysis Dashboard"
+  version: "1.0.0"
+  debug: false
+  cache_enabled: true
+  cache_duration: 3600  # seconds
+
+database:
+  type: "sqlite"
+  path: "data/well_analysis.db"
+  backup_enabled: true
+  backup_frequency: "daily"
+
+analysis:
+  monte_carlo:
+    default_iterations: 1000
+    confidence_level: 0.90
+    seed: null
+
+  economic:
+    default_discount_rate: 0.10
+    inflation_rate: 0.03
+    tax_rate: 0.21
+    royalty_rate: 0.20
+
+  technical:
+    pressure_units: "psi"
+    temperature_units: "fahrenheit"
+    volume_units: "barrels"
+    length_units: "feet"
+
+  production:
+    minimum_rate: 1.0
+    maximum_decline: 0.50
+    forecast_max_years: 20
+
+visualization:
+  theme: "plotly_white"
+  color_scheme:
+    primary: "#1f77b4"
+    secondary: "#ff7f0e"
+    success: "#2ca02c"
+    warning: "#d62728"
+    neutral: "#7f7f7f"
+
+  plots:
+    default_height: 400
+    default_width: 800
+    show_grid: true
+    font_size: 12
+
+reporting:
+  output_dir: "reports"
+  formats:
+    - "xlsx"
+    - "csv"
+    - "pdf"
+  include_charts: true
+  auto_save: true
+
+logging:
+  level: "INFO"
+  file: "logs/well_analysis.log"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  rotate: true
+  max_size: 10485760  # 10MB
+  backup_count: 5
+
+alerts:
+  enabled: true
+  channels:
+    email: false
+    dashboard: true
+  thresholds:
+    critical_water_cut: 0.95
+    minimum_pressure: 500
+    equipment_health: 0.70
+
+
+
+

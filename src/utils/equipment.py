@@ -1,100 +1,150 @@
+# src/utils/equipment.py
+from typing import Dict, List, Optional, Tuple
 import numpy as np
-from typing import Dict, List, Tuple
-from datetime import datetime, timedelta
+from datetime import datetime
+
 
 class EquipmentAnalyzer:
+    """Analyzer for equipment health and maintenance"""
+
     def __init__(self):
-        self.failure_modes = {
-            'pump': ['cavitation', 'bearing_wear', 'seal_failure'],
-            'motor': ['overheating', 'electrical_failure', 'bearing_wear'],
-            'separator': ['corrosion', 'level_control', 'pressure_control']
-        }
-        
         self.thresholds = {
-            'pump': {
-                'vibration': 0.5,
-                'temperature': 180,
-                'pressure': 1000
-            },
-            'motor': {
-                'temperature': 200,
-                'current': 100,
-                'voltage': 480
-            },
-            'separator': {
-                'pressure': 300,
-                'level': 80,
-                'temperature': 150
-            }
+            'vibration': 0.5,  # Maximum acceptable vibration
+            'temperature': 180,  # Maximum acceptable temperature (°F)
+            'pressure': 1000  # Maximum acceptable pressure (psi)
+        }
+
+        self.maintenance_intervals = {
+            'routine': 30,  # days
+            'major': 180,  # days
+            'inspection': 90  # days
         }
 
     def calculate_reliability(
-        self,
-        equipment_type: str,
-        parameters: Dict[str, float],
-        age: float,
-        maintenance_history: List[datetime]
-    ) -> Tuple[float, List[str]]:
-        """
-        Calculate equipment reliability and identify risks
-        """
-        # Base reliability based on age
-        base_reliability = np.exp(-0.1 * age)
-        
-        # Maintenance factor
-        maintenance_factor = self._calculate_maintenance_factor(maintenance_history)
-        
-        # Parameter violations
-        violations = []
-        violation_factor = 0
-        
-        for param, value in parameters.items():
-            if param in self.thresholds[equipment_type]:
-                threshold = self.thresholds[equipment_type][param]
-                if value > threshold:
-                    violations.append(f"{param} exceeds threshold")
-                    violation_factor += 0.1
-        
-        # Calculate final reliability
-        reliability = base_reliability * (1 + maintenance_factor) * (1 - violation_factor)
-        reliability = max(0, min(1, reliability))
-        
-        return reliability, violations
-
-    def _calculate_maintenance_factor(
-        self,
-        maintenance_history: List[datetime]
+            self,
+            vibration: float,
+            temperature: float,
+            age_factor: float = 1.0
     ) -> float:
         """
-        Calculate maintenance effectiveness factor
+        Calculate equipment reliability based on operating parameters.
+
+        Args:
+            vibration: Current vibration level
+            temperature: Current temperature
+            age_factor: Equipment age factor (1.0 = new)
+
+        Returns:
+            Reliability score (0-1)
         """
-        if not maintenance_history:
-            return 0
-            
-        now = datetime.now()
-        recent_maintenance = [
-            m for m in maintenance_history
-            if (now - m).days < 180
-        ]
-        
-        return len(recent_maintenance) * 0.05
+        # Normalize parameters to 0-1 scale
+        vib_score = max(0, 1 - (vibration / self.thresholds['vibration']))
+        temp_score = max(0, 1 - (temperature / self.thresholds['temperature']))
+
+        # Weight the factors
+        reliability = (0.4 * vib_score + 0.4 * temp_score + 0.2 * age_factor)
+
+        return max(0, min(1, reliability))
 
     def predict_failure(
-        self,
-        reliability: float,
-        parameters: Dict[str, float],
-        threshold: float = 0.7
-    ) -> Tuple[bool, int]:
+            self,
+            vibration: float,
+            temperature: float,
+            health: float
+    ) -> float:
         """
-        Predict equipment failure and estimate days until maintenance needed
+        Predict probability of equipment failure.
+
+        Args:
+            vibration: Current vibration level
+            temperature: Current temperature
+            health: Current health score (0-100)
+
+        Returns:
+            Failure probability (0-1)
         """
-        risk_level = 1 - reliability
-        needs_maintenance = risk_level > threshold
-        
-        if needs_maintenance:
-            days_until_critical = int((threshold - risk_level) / 0.01)
-            days_until_critical = max(0, days_until_critical)
-        else:
-            days_until_critical = int((threshold - risk_level) / 0.01)
-        
-        return needs_maintenance, days_until_critical
+        # Normalize inputs
+        vib_factor = min(1.0, vibration / self.thresholds['vibration'])
+        temp_factor = max(0.0, (temperature - self.thresholds['temperature']) / 100)
+        health_factor = 1.0 - (health / 100)
+
+        # Calculate failure probability
+        failure_prob = (0.4 * vib_factor + 0.3 * temp_factor + 0.3 * health_factor)
+        return min(1.0, max(0.0, failure_prob))
+
+    def analyze_maintenance_needs(
+            self,
+            equipment_data: Dict[str, float],
+            last_maintenance: datetime
+    ) -> Dict[str, any]:
+        """
+        Analyze maintenance requirements
+
+        Args:
+            equipment_data: Dictionary of equipment parameters
+            last_maintenance: Date of last maintenance
+
+        Returns:
+            Dictionary of maintenance analysis
+        """
+        days_since_maintenance = (datetime.now() - last_maintenance).days
+
+        reliability = self.calculate_reliability(
+            vibration=equipment_data.get('vibration', 0),
+            temperature=equipment_data.get('temperature', 0)
+        )
+
+        failure_prob = self.predict_failure(
+            vibration=equipment_data.get('vibration', 0),
+            temperature=equipment_data.get('temperature', 0),
+            health=reliability * 100
+        )
+
+        return {
+            'reliability': reliability,
+            'failure_probability': failure_prob,
+            'days_since_maintenance': days_since_maintenance,
+            'maintenance_due': days_since_maintenance > self.maintenance_intervals['routine'],
+            'inspection_due': days_since_maintenance > self.maintenance_intervals['inspection'],
+            'major_service_due': days_since_maintenance > self.maintenance_intervals['major']
+        }
+
+    def get_maintenance_recommendations(
+            self,
+            analysis_results: Dict[str, any]
+    ) -> List[Dict[str, any]]:
+        """
+        Generate maintenance recommendations
+
+        Args:
+            analysis_results: Results from analyze_maintenance_needs
+
+        Returns:
+            List of maintenance recommendations
+        """
+        recommendations = []
+
+        if analysis_results['failure_probability'] > 0.7:
+            recommendations.append({
+                'priority': 'HIGH',
+                'action': 'Immediate maintenance required',
+                'timeframe': 'Within 24 hours',
+                'risk': 'Critical failure risk'
+            })
+        elif analysis_results['failure_probability'] > 0.4:
+            recommendations.append({
+                'priority': 'MEDIUM',
+                'action': 'Schedule maintenance',
+                'timeframe': 'Within 7 days',
+                'risk': 'Increased failure risk'
+            })
+
+        if analysis_results['maintenance_due']:
+            recommendations.append({
+                'priority': 'NORMAL',
+                'action': 'Routine maintenance',
+                'timeframe': 'Schedule next available',
+                'risk': 'Regular maintenance interval exceeded'
+            })
+
+        return recommendations

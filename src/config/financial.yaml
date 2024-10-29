@@ -1,0 +1,44 @@
+economic_limits:
+  oil_rate: 5  # bbl/day
+  water_cut: 0.98
+  gas_oil_ratio: 10000
+  operating_cost: 100  # $/bbl
+
+taxes:
+  federal:
+    corporate_rate: 0.21
+    depletion_allowance: 0.15
+
+  state:
+    corporate_rate: 0.05
+    severance_tax: 0.045
+    ad_valorem: 0.015
+
+royalties:
+  base_rate: 0.20
+  minimum_payment: 1000  # $/month
+  escalators:
+    price_threshold: 80  # $/bbl
+    rate_increase: 0.025
+
+depreciation:
+  method: "MACRS"
+  equipment_life: 7
+  bonus_depreciation: 1.00
+
+credits:
+  enhanced_oil_recovery: 0.15
+  marginal_well: 0.03
+
+abandonment:
+  plugging:
+    base_cost_per_foot: 25
+    contingency: 0.15
+
+  site_restoration:
+    base_cost_per_acre: 10000
+    contingency: 0.20
+
+  equipment_removal:
+    base_cost: 50000
+    contingency: 0.10

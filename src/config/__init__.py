@@ -1,3 +1,7 @@
+"""
+Configuration management for oil well calculator.
+"""
+
 import yaml
 from pathlib import Path
 
@@ -11,8 +15,13 @@ def load_all_configs():
         'tax_rates': load_config('tax_rates.yaml')
     }
 
-def load_config(filename):
+def load_config(filename: str) -> dict:
     """Load a specific configuration file."""
     config_path = CONFIG_DIR / filename
     with open(config_path, 'r') as f:
-        return yaml.safe_load(f)
+        try:
+            return yaml.safe_load(f)
+        except yaml.YAMLError as e:
+            raise ValueError(f"Error loading configuration file {filename}: {str(e)}")
+
+__all__ = ['load_all_configs', 'load_config']

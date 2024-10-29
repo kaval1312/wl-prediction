@@ -1,115 +1,89 @@
-emissions_monitoring:
-  name: "Emissions Monitoring and Control"
-  compliance_cost: 5000
-  recurring_cost: 500
-  penalty: 25000
-  inspection_frequency: 3
-  probability_of_violation: 0.05
-  requirements:
-    - rule: "Monthly Emissions Testing"
-      cost: 300
-      frequency: 1
-    - rule: "Quarterly Report Filing"
-      cost: 1000
-      frequency: 3
-    - rule: "Annual Equipment Certification"
-      cost: 2500
-      frequency: 12
-  violations:
-    minor:
-      probability: 0.04
-      penalty: 5000
-    major:
-      probability: 0.01
-      penalty: 25000
-    critical:
-      probability: 0.001
-      penalty: 100000
 
-water_disposal:
-  name: "Water Disposal Management"
-  compliance_cost: 8000
-  recurring_cost: 1000
-  penalty: 50000
-  inspection_frequency: 6
-  probability_of_violation: 0.03
-  requirements:
-    - rule: "Water Quality Testing"
-      cost: 500
-      frequency: 1
-    - rule: "Disposal Well Monitoring"
-      cost: 800
-      frequency: 3
-    - rule: "Annual Permit Renewal"
-      cost: 5000
-      frequency: 12
-  violations:
-    minor:
-      probability: 0.02
-      penalty: 10000
-    major:
-      probability: 0.008
-      penalty: 50000
-    critical:
-      probability: 0.002
-      penalty: 200000
+permits:
+  operating:
+    name: "Operating Permit"
+    renewal_interval: 12  # months
+    cost: 5000
+    requirements:
+      - "Production Reports"
+      - "Equipment Inspections"
+      - "Safety Compliance"
+    
+  disposal:
+    name: "Water Disposal Permit"
+    renewal_interval: 6
+    cost: 3000
+    requirements:
+      - "Water Analysis"
+      - "Disposal Well Tests"
+      - "Volume Reports"
 
-soil_contamination:
-  name: "Soil Protection and Monitoring"
-  compliance_cost: 10000
-  recurring_cost: 300
-  penalty: 75000
-  inspection_frequency: 12
-  probability_of_violation: 0.02
-  requirements:
-    - rule: "Soil Sampling"
-      cost: 1000
+inspections:
+  types:
+    mechanical:
+      frequency: 3  # months
+      duration: 4  # hours
+      cost: 1500
+    
+    environmental:
       frequency: 6
-    - rule: "Containment Inspection"
-      cost: 500
-      frequency: 3
-    - rule: "Remediation Plan Update"
-      cost: 2000
-      frequency: 12
-  violations:
-    minor:
-      probability: 0.015
-      penalty: 15000
-    major:
-      probability: 0.004
-      penalty: 75000
-    critical:
-      probability: 0.001
-      penalty: 300000
-
-carbon_emissions:
-  name: "Carbon Emissions Management"
-  compliance_cost: 15000
-  recurring_cost: 800
-  penalty: 100000
-  inspection_frequency: 6
-  probability_of_violation: 0.04
-  requirements:
-    - rule: "Emissions Monitoring"
-      cost: 1000
+      duration: 8
+      cost: 2500
+    
+    safety:
       frequency: 1
-    - rule: "Carbon Credit Reporting"
-      cost: 2000
-      frequency: 3
-    - rule: "Technology Assessment"
-      cost: 5000
-      frequency: 12
-  carbon_pricing:
-    base_rate: 40  # $/tonne CO2
-    annual_increase: 0.05
-    credit_market_price: 35
-  violations:
-    minor:
-      probability: 0.03
-      penalty: 20000
-    major:
-      probability: 0.008
-      penalty: 100000
-    critical:
-      probability: 0.002
-      penalty: 500000
+      duration: 2
+      cost: 800
+
+reporting:
+  production:
+    frequency: "monthly"
+    deadline_day: 15
+    format: "electronic"
+    required_data:
+      - "Oil Production"
+      - "Water Production"
+      - "Gas Production"
+      - "Pressure Readings"
+  
+  environmental:
+    frequency: "quarterly"
+    deadline_day: 30
+    format: "electronic"
+    required_data:
+      - "Water Analysis"
+      - "Emissions Data"
+      - "Spill Reports"
+
+compliance:
+  environmental:
+    water_disposal:
+      max_pressure: 2000  # psi
+      max_volume: 10000  # bbl/day
+      testing_frequency: "monthly"
+    
+    emissions:
+      monitoring: "continuous"
+      reporting: "quarterly"
+      thresholds:
+        methane: 100  # ppm
+        voc: 50  # ppm
+    
+    spill_prevention:
+      plan_update_frequency: 60  # months
+      training_frequency: 12  # months
+      inspection_frequency: 1  # month
+
+  safety:
+    training:
+      initial_hours: 40
+      refresher_hours: 8
+      frequency: 12  # months
+    
+    equipment:
+      inspection_frequency: 1  # month
+      certification_frequency: 12  # months
+    
+    emergency_response:
+      plan_update_frequency: 12  # months
+      drill_frequency: 6  # months

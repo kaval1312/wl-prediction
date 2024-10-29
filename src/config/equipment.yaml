@@ -1,119 +1,63 @@
-pump_system:
-  name: "Electric Submersible Pump"
-  expected_life: 60  # months
-  replacement_cost: 50000
-  failure_impact: 0.8
-  maintenance_schedule: 3
-  components:
-    motor:
-      life_hours: 40000
-      cost: 15000
-      critical: true
-    pump:
-      life_hours: 30000
-      cost: 25000
-      critical: true
-    cable:
-      life_hours: 50000
-      cost: 8000
-      critical: false
-  maintenance_tasks:
-    - task: "Oil Change"
-      frequency: 3  # months
-      cost: 500
-    - task: "Bearing Inspection"
-      frequency: 6
-      cost: 1200
-    - task: "Motor Testing"
-      frequency: 12
-      cost: 2000
+pumps:
+  esp:
+    name: "Electric Submersible Pump"
+    expected_life: 60  # months
+    replacement_cost: 50000
+    maintenance_interval: 3  # months
+    failure_modes:
+      - name: "Motor Failure"
+        probability: 0.15
+        cost_multiplier: 1.2
+      - name: "Pump Wear"
+        probability: 0.25
+        cost_multiplier: 0.8
+      - name: "Cable Issues"
+        probability: 0.10
+        cost_multiplier: 0.5
+    
+  rod_pump:
+    name: "Rod Pump"
+    expected_life: 84
+    replacement_cost: 35000
+    maintenance_interval: 6
+    failure_modes:
+      - name: "Rod Break"
+        probability: 0.20
+        cost_multiplier: 0.7
+      - name: "Tubing Wear"
+        probability: 0.15
+        cost_multiplier: 0.9
 
-wellhead:
-  name: "Wellhead Assembly"
-  expected_life: 120
-  replacement_cost: 75000
-  failure_impact: 1.0
-  maintenance_schedule: 6
-  components:
-    casing_head:
-      life_hours: 87600
-      cost: 30000
-      critical: true
-    tubing_head:
-      life_hours: 87600
-      cost: 25000
-      critical: true
-    valves:
-      life_hours: 43800
-      cost: 15000
-      critical: true
-  maintenance_tasks:
-    - task: "Pressure Testing"
-      frequency: 6
-      cost: 1500
-    - task: "Valve Service"
-      frequency: 12
-      cost: 3000
-    - task: "Seal Replacement"
-      frequency: 24
-      cost: 5000
+separators:
+  three_phase:
+    name: "Three Phase Separator"
+    expected_life: 120
+    replacement_cost: 75000
+    maintenance_interval: 12
+    operating_parameters:
+      max_pressure: 1500
+      max_temperature: 200
+      max_water_cut: 0.95
 
-separator:
-  name: "Three-Phase Separator"
-  expected_life: 84
-  replacement_cost: 40000
-  failure_impact: 0.6
-  maintenance_schedule: 4
-  components:
-    vessel:
-      life_hours: 70000
-      cost: 25000
-      critical: true
-    controls:
-      life_hours: 35000
-      cost: 10000
-      critical: false
-    instruments:
-      life_hours: 30000
-      cost: 5000
-      critical: false
-  maintenance_tasks:
-    - task: "Vessel Inspection"
-      frequency: 12
-      cost: 2000
-    - task: "Control Calibration"
-      frequency: 6
-      cost: 1000
-    - task: "Level Control Service"
-      frequency: 4
-      cost: 800
+meters:
+  production:
+    name: "Production Meter"
+    expected_life: 96
+    replacement_cost: 15000
+    calibration_interval: 6
+    accuracy: 0.02
 
-storage_tanks:
-  name: "Storage Tank System"
-  expected_life: 180
-  replacement_cost: 100000
-  failure_impact: 0.7
-  maintenance_schedule: 12
-  components:
-    tanks:
-      life_hours: 131400
-      cost: 70000
-      critical: true
-    gauges:
-      life_hours: 43800
-      cost: 5000
-      critical: false
-    valves:
-      life_hours: 43800
-      cost: 15000
-      critical: true
-  maintenance_tasks:
-    - task: "Tank Inspection"
-      frequency: 12
-      cost: 3000
-    - task: "Coating Inspection"
-      frequency: 24
-      cost: 5000
-    - task: "Calibration"
-      frequency: 6
-      cost: 1000
+monitoring:
+  parameters:
+    - name: "Pressure"
+      units: "psi"
+      normal_range: [100, 3000]
+      critical_range: [50, 3500]
+    - name: "Temperature"
+      units: "fahrenheit"
+      normal_range: [80, 180]
+      critical_range: [60, 200]
+    - name: "Vibration"
+      units: "in/s"
+      normal_range: [0, 0.5]
+      critical_range: [0, 1.0]

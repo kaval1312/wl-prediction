@@ -7,39 +7,34 @@ setup(
     name="oil-well-calculator",
     version="1.0.0",
     author="Test WL",
-    author_email="akovalenko1312@gmail.com",
-    description="A comprehensive oil well abandonment analysis tool",
+    description="A comprehensive oil well analysis tool",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/kaval1312/oil-well-calculator",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Intended Audience :: Science/Research",
-        "Topic :: Scientific/Engineering :: Physics",
-        "License :: OSI Approved :: MIT License",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
     ],
     python_requires=">=3.8",
     install_requires=[
-        "streamlit>=1.24.0",
-        "pandas>=2.0.3",
-        "numpy>=1.24.3",
-        "plotly>=5.15.0",
-        "scipy>=1.10.1",
-        "statsmodels>=0.14.0",
+        "streamlit==1.37.0",
+        "pandas>=2.2.0",
+        "numpy>=1.26.0",
+        "plotly>=5.18.0",
+        "scipy>=1.12.0",
         "pyyaml>=6.0.1",
-        "pytest>=7.4.0",
+        "scikit-learn==1.5.0",
+        "openpyxl>=3.1.2"
     ],
-    entry_points={
-        "console_scripts": [
-            "oil-well-calculator=src.main:main",
-        ],
+    package_data={
+        "": [
+            "config/*.yaml",
+            "data/equipment_specs/**/*.csv",
+            "data/tax_tables/**/*.csv"
+        ]
     },
     include_package_data=True,
-    package_data={
-        "": ["config/*.yaml"],
-    },
 )

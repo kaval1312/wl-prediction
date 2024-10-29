@@ -1,116 +1,158 @@
-from typing import Dict, List
+from typing import Dict, List, Tuple
 import numpy as np
 
+
 def calculate_tax_obligations(
-    revenue: float,
-    expenses: float,
-    tax_rates: Dict[str, float],
-    deductions: List[Dict],
-    credits: List[Dict]
-) -> float:
+        revenue: np.ndarray,
+        costs: np.ndarray,
+        tax_rates: Dict[str, float],
+        deductions: Dict[str, float],
+        credits: Dict[str, float]
+) -> Tuple[np.ndarray, Dict[str, np.ndarray]]:
     """
     Calculate total tax obligations.
-    
-    Args:
-        revenue: Gross revenue
-        expenses: Total expenses
-        tax_rates: Dictionary of tax rates
-        deductions: List of applicable deductions
-        credits: List of applicable credits
-    
-    Returns:
-        Total tax obligation
-    """
-    taxable_income = revenue - expenses
-    
-    # Apply deductions
-    for deduction in deductions:
-        if deduction['type'] == 'percentage':
-            taxable_income -= revenue * deduction['value']
-        else:  # fixed amount
-            taxable_income -= deduction['value']
-    
-    # Calculate base tax
-    tax = taxable_income * tax_rates['federal']
-    tax += taxable_income * tax_rates['state']
-    
-    # Apply credits
-    for credit in credits:
-        tax -= credit['value']
-    
-    return max(0, tax)
 
-def calculate_depletion_allowance(
-    revenue: float,
-    rate: float = 0.15,
-    limit: float = 0.65
-) -> float:
-    """
-    Calculate percentage depletion allowance.
-    
     Args:
-        revenue: Gross revenue
-        rate: Depletion rate (typically 15%)
-        limit: Net income limitation (typically 65%)
-    
+        revenue: Gross revenue array
+        costs: Total costs array
+        tax_rates: Dictionary of tax rates
+        deductions: Dictionary of deductions
+        credits: Dictionary of tax credits
+
     Returns:
-        Depletion allowance amount
+        Tuple of (total_tax_obligations, tax_components)
     """
-    allowance = revenue * rate
-    income_limit = revenue * limit
-    return min(allowance, income_limit)
+    # Calculate taxable income
+    taxable_income = revenue - costs
+
+    # Apply deductions
+    for deduction_rate in deductions.values():
+        taxable_income -= revenue * deduction_rate
+
+    # Calculate tax components
+    federal_tax = np.maximum(0, taxable_income * tax_rates.get('federal', 0.21))
+    state_tax = np.maximum(0, taxable_income * tax_rates.get('state', 0.05))
+
+    # Calculate severance tax
+    severance_tax = calculate_severance_tax(
+        revenue=revenue,
+        rate=tax_rates.get('severance', 0.045)
+    )
+
+    # Apply credits
+    total_credits = sum(credits.values())
+    total_tax = federal_tax + state_tax + severance_tax
+    adjusted_tax = np.maximum(0, total_tax - total_credits)
+
+    tax_components = {
+        'federal': federal_tax,
+        'state': state_tax,
+        'severance': severance_tax,
+        'credits': np.full_like(federal_tax, total_credits),
+        'final': adjusted_tax
+    }
+
+    return adjusted_tax, tax_components
+
 
 def calculate_severance_tax(
-    production: float,
-    price: float,
-    tax_rate: float,
-    exemptions: Dict = None
-) -> float:
-    """
-    Calculate severance tax.
-    
-    Args:
-        production: Oil production (barrels)
-        price: Oil price per barrel
-        tax_rate: Severance tax rate
-        exemptions: Dictionary of applicable exemptions
-    
-    Returns:
-        Severance tax amount
-    """
-    taxable_value = production * price
-    
-    if exemptions:
-        for exemption in exemptions.values():
-            taxable_value *= (1 - exemption)
-    
-    return taxable_value * tax_rate
+        revenue: np.ndarray,
+        rate: float,
+        exemptions: Dict[str, float] = None
+) -> np.ndarray:
+    """Calculate severance tax."""
+    taxable_value = revenue.copy()
 
-def calculate_carbon_tax(
-    production: float,
-    emission_factor: float,
-    tax_rate: float,
-    carbon_credits: float = 0.0,
-    offset_factor: float = 0.0
-) -> float:
-    """
-    Calculate carbon tax based on production and emissions.
-    
-    Args:
-        production: Oil production (barrels)
-        emission_factor: CO2 emissions per barrel (tonnes CO2/bbl)
-        tax_rate: Carbon tax rate ($/tonne CO2)
-        carbon_credits: Available carbon credits (tonnes CO2)
-        offset_factor: Emissions reduction factor from mitigation efforts
-    
-    Returns:
-        Carbon tax amount
-    """
-    # Calculate total emissions
-    total_emissions = production * emission_factor * (1 - offset_factor)
-    
-    # Subtract available carbon credits
-    taxable_emissions = max(0, total_emissions - carbon_credits)
-    
-    # Calculate tax
-    return taxable_emissions * tax_rate
+    if exemptions:
+        for exemption_rate in exemptions.values():
+            taxable_value *= (1 - exemption_rate)
+
+    return taxable_value * rate
+
+
+def calculate_depletion_allowance(
+        revenue: np.ndarray,
+        rate: float = 0.15,
+        net_income_limit: float = 0.65
+) -> np.ndarray:
+    """Calculate percentage depletion allowance."""
+    allowance = revenue * rate
+    income_limit = revenue * net_income_limit
+    return np.minimum(allowance, income_limit)
+
+
+def calculate_depreciation(
+        initial_value: float,
+        months: int,
+        method: str = 'MACRS',
+        asset_life: int = 7
+) -> np.ndarray:
+    """Calculate monthly depreciation."""
+    if method == 'MACRS':
+        # MACRS rates for different asset lives
+        rates = {
+            5: [0.20, 0.32, 0.192, 0.1152, 0.1152, 0.0576],
+            7: [0.1429, 0.2449, 0.1749, 0.1249, 0.0893, 0.0892, 0.0893],
+            10: [0.10, 0.18, 0.144, 0.1152, 0.0922, 0.0737, 0.0655, 0.0655, 0.0656, 0.0655]
+        }
+
+        if asset_life not in rates:
+            raise ValueError(f"Unsupported asset life: {asset_life}")
+
+        annual_depreciation = np.zeros(asset_life)
+        annual_depreciation[:len(rates[asset_life])] = rates[asset_life]
+
+        # Convert to monthly
+        monthly_depreciation = np.repeat(annual_depreciation, 12)[:months]
+        return monthly_depreciation * initial_value / 12
+
+    elif method == 'straight_line':
+        monthly_rate = 1 / (asset_life * 12)
+        return np.full(months, initial_value * monthly_rate)
+
+    else:
+        raise ValueError(f"Unsupported depreciation method: {method}")
+
+
+def calculate_tax_basis(
+        initial_investment: float,
+        accumulated_depreciation: np.ndarray
+) -> np.ndarray:
+    """Calculate remaining tax basis."""
+    return np.maximum(0, initial_investment - np.cumsum(accumulated_depreciation))
+
+
+def analyze_tax_scenarios(
+        revenue: np.ndarray,
+        costs: np.ndarray,
+        base_rates: Dict[str, float],
+        scenarios: Dict[str, Dict[str, float]]
+) -> Dict[str, Dict[str, np.ndarray]]:
+    """Analyze different tax scenarios."""
+    results = {}
+
+    # Base case
+    base_tax, base_components = calculate_tax_obligations(
+        revenue=revenue,
+        costs=costs,
+        tax_rates=base_rates,
+        deductions={},
+        credits={}
+    )
+    results['base'] = base_components
+
+    # Alternative scenarios
+    for name, rate_adjustments in scenarios.items():
+        adjusted_rates = base_rates.copy()
+        adjusted_rates.update(rate_adjustments)
+
+        scenario_tax, scenario_components = calculate_tax_obligations(
+            revenue=revenue,
+            costs=costs,
+            tax_rates=adjusted_rates,
+            deductions={},
+            credits={}
+        )
+        results[name] = scenario_components
+
+    return results
