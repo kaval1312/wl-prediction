@@ -1,0 +1,80 @@
+federal:
+  corporate_rate: 0.21
+  depletion_allowance: 0.15
+  depreciation:
+    method: "MACRS"
+    equipment_life: 7
+    bonus_depreciation: 1.00
+  credits:
+    enhanced_oil_recovery:
+      rate: 0.15
+      phase_out_threshold: 75  # $/bbl
+    marginal_well:
+      rate: 0.03
+      production_limit: 1000  # bbl/day
+    carbon_capture:
+      rate: 50  # $/tonne CO2
+      minimum_capture: 0.5  # capture fraction
+
+state:
+  corporate_rate: 0.05
+  severance_tax:
+    oil_rate: 0.045
+    gas_rate: 0.08
+    exemptions:
+      enhanced_recovery: 0.02
+      stripper_well: 0.03
+  property_tax:
+    rate: 0.015
+    assessment_ratio: 0.8
+  credits:
+    environmental_compliance:
+      rate: 0.1
+      cap: 100000
+    workforce_development:
+      rate: 0.05
+      cap: 50000
+
+deductions:
+  intangible_drilling_costs:
+    expensing_rate: 1.0
+    amortization_period: 60
+  tangible_costs:
+    bonus_depreciation: 1.0
+    recovery_period: 7
+  operating_costs:
+    deductible_rate: 1.0
+    limitations:
+      - type: "per_barrel"
+        amount: 25
+      - type: "annual"
+        amount: 1000000
+
+credits:
+  marginal_well:
+    credit_per_barrel: 3
+    phase_out_price: 75
+    daily_limit: 1000
+  environmental:
+    emission_reduction: 0.1
+    water_treatment: 0.15
+    soil_remediation: 0.12
+  research_development:
+    base_rate: 0.2
+    enhanced_rate: 0.3
+    qualified_activities:
+      - "Enhanced Recovery"
+      - "Carbon Capture"
+      - "Water Treatment"
+
+reporting:
+  frequency: "quarterly"
+  deadlines:
+    q1: "04-15"
+    q2: "07-15"
+    q3: "10-15"
+    q4: "01-15"
+  estimated_payments:
+    required: true
+    threshold: 500000
+    penalty_rate: 0.03

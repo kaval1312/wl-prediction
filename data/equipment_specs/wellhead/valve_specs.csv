@@ -1,0 +1,13 @@
+type,size_inches,pressure_rating,material,cost_usd
+Gate,8,3000,Stainless Steel,1690
+Check,4,10000,Carbon Steel,3054
+Ball,8,10000,Carbon Steel,1348
+Needle,4,5000,Alloy,1511
+Gate,4,5000,Alloy,1893
+Check,2,2000,Alloy,4290
+Ball,6,5000,Alloy,2787
+Needle,2,2000,Carbon Steel,2331
+Gate,2,5000,Alloy,3893
+Check,2,10000,Stainless Steel,4097
+Ball,6,3000,Carbon Steel,4496
+Needle,3,2000,Alloy,1920

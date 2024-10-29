@@ -1,0 +1,11 @@
+model,type,length_ft,weight_lbs,max_depth_ft,cost_usd
+PL001,Brush,8.0,7.7,11788,932
+PL002,Wobble,6.6,5.5,14714,789
+PL003,Standard,4.8,9.3,14870,753
+PL004,Brush,3.4,7.7,10422,1292
+PL005,Pad,6.0,4.0,11304,1094
+PL006,Brush,6.2,3.0,11673,1436
+PL007,Pad,5.8,6.7,9641,781
+PL008,Pad,3.7,3.4,10338,822
+PL009,Standard,3.2,7.6,13750,841
+PL010,Brush,4.4,6.8,13786,1817

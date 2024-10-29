@@ -1,0 +1,11 @@
+model,manufacturer,stroke_length_in,max_load_lbs,strokes_per_min,cost_usd
+RP001,Weatherford,100,27622,11,41822
+RP002,Lufkin,100,24850,7,46673
+RP003,Weatherford,120,27408,12,42523
+RP004,National,120,25682,8,27200
+RP005,Weatherford,120,18966,12,39689
+RP006,Weatherford,86,26028,10,33054
+RP007,Weatherford,168,24698,7,62188
+RP008,Weatherford,86,15254,6,40198
+RP009,Lufkin,144,19295,11,28959
+RP010,Lufkin,86,16445,9,65918

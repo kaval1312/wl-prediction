@@ -1,0 +1,11 @@
+model,type,capacity_bpd,pressure_rating,length_ft,diameter_ft,cost_usd
+SEP001,Vertical,8672,1000,27,4,152498
+SEP002,Horizontal,8373,500,19,6,64184
+SEP003,Horizontal,3569,125,12,6,109317
+SEP004,Vertical,1716,1000,22,3,154211
+SEP005,Horizontal,8530,250,16,6,133183
+SEP006,Vertical,5033,125,19,7,126595
+SEP007,Horizontal,6755,125,19,3,193991
+SEP008,Vertical,7361,125,16,6,123318
+SEP009,Horizontal,4325,1000,28,3,94531
+SEP010,Horizontal,7101,125,20,6,175677

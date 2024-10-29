@@ -1,0 +1,5 @@
+parameter,limit_min,limit_max,unit,test_frequency
+pH,6.5,8.5,pH units,Daily
+TDS,0.0,5000.0,mg/L,Weekly
+Oil Content,0.0,15.0,ppm,Daily
+Chlorides,0.0,1000.0,mg/L,Weekly

@@ -1,0 +1,11 @@
+model,capacity_bbl,diameter_ft,height_ft,material,cost_usd
+TNK001,200,11,20,Stainless Steel,49724
+TNK002,500,13,21,Stainless Steel,97924
+TNK003,200,18,15,Stainless Steel,25776
+TNK004,1000,19,17,Carbon Steel,53788
+TNK005,200,11,10,Stainless Steel,39951
+TNK006,500,16,17,Carbon Steel,91278
+TNK007,200,10,18,Carbon Steel,76873
+TNK008,500,19,18,Carbon Steel,93893
+TNK009,200,12,23,Stainless Steel,47890
+TNK010,1000,15,12,Stainless Steel,88449

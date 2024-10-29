@@ -1,0 +1,6 @@
+class_rating,max_pressure_psi,temperature_range,material_spec,cost_usd
+2000,2000,-20 to 250,API-6A,10000
+3000,3000,-20 to 250,API-6A,15000
+5000,5000,-20 to 250,API-6A,25000
+10000,10000,-20 to 250,API-6A,40000
+15000,15000,-20 to 250,API-6A,60000
