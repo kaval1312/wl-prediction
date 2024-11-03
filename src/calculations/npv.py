@@ -140,6 +140,11 @@ def calculate_profitability_metrics(
         'unit_cost': total_costs / np.sum(production) if np.sum(production) > 0 else float('inf')
     }
 
+def calculate_npv(cash_flows: np.ndarray, rate: float, initial_investment: float) -> float:
+    """Calculate Net Present Value of cash flows."""
+    monthly_rate = (1 + rate) ** (1/12) - 1
+    present_values = cash_flows / (1 + monthly_rate) ** np.arange(len(cash_flows))
+    return -initial_investment + np.sum(present_values)
 
 def sensitivity_analysis(
         base_case: Dict[str, float],
