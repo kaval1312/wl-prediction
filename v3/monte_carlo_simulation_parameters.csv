@@ -1,0 +1,4 @@
+initial_prod,decline_rate,oil_price,operating_cost,abandonment_cost,discount_rate,maintenance_cost,capex,tax_rate,royalty_rate,economic_limit,simulation_years,oil_price_esc_rate,op_cost_esc_rate,capex_schedule,decline_model,b_factor,depreciation_years,debt_ratio,interest_rate,loan_term
+1000,10,70,30,500000,8,50000,1000000,0.3,0.125,0,20,0.01,0.02,"5:200000,10:200000",Exponential,0.5,10,50,5,10
+1200,12,65,28,600000,9,60000,1200000,0.32,0.1,50000,25,0.015,0.03,"3:300000,8:100000",Hyperbolic,0.4,12,60,6,12
+800,8,60,25,400000,7,40000,800000,0.28,0.15,10000,15,0.02,0.025,"2:150000,6:250000",Exponential,0.6,8,40,4,8
