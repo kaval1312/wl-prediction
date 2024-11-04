@@ -26,7 +26,7 @@ setup(
         "plotly>=5.18.0",
         "scipy>=1.12.0",
         "pyyaml>=6.0.1",
-        "scikit-learn==1.5.0",
+        "scikit-learn==1.5.2",
         "openpyxl>=3.1.2"
     ],
     package_data={
