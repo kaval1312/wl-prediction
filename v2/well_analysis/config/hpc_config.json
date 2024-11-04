@@ -1,0 +1,14 @@
+{
+    "host": "hpc.example.com",
+    "username": "user",
+    "key_path": "/path/to/ssh/key",
+    "work_dir": "/work/projects/well_analysis",
+    "partition": "compute",
+    "time": "24:00:00",
+    "mem_per_cpu": "4G",
+    "cpus_per_task": "4",
+    "modules": [
+        "python/3.8",
+        "cuda/11.0"
+    ]
+}
